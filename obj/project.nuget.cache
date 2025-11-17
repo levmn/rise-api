@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "pTT4Gf0TGy0=",
+  "success": true,
+  "projectFilePath": "/home/levmn/Code/RiseApi/RiseApi.csproj",
+  "expectedPackageFiles": [
+    "/home/levmn/.nuget/packages/microsoft.aspnetcore.openapi/9.0.11/microsoft.aspnetcore.openapi.9.0.11.nupkg.sha512",
+    "/home/levmn/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
