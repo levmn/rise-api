@@ -15,6 +15,18 @@ namespace RiseApi.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Education>()
+                .HasOne(e => e.Resume)
+                .WithMany(r => r.EducationItems)
+                .HasForeignKey(e => e.ResumeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WorkExperience>()
+                .HasOne(w => w.Resume)
+                .WithMany(r => r.WorkExperiences)
+                .HasForeignKey(w => w.ResumeId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace RiseApi.Models
         public DateTime EndDate { get; set; }
 
         [Required]
-        public int ResumeId { get; set; }
+        public Guid ResumeId { get; set; }
 
         public Resume? Resume { get; set; }
     }
