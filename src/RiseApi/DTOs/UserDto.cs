@@ -6,7 +6,7 @@ namespace RiseApi.DTOs
         public string Password { get; set; } = null!;
     }
 
-    public class UserResponseDto
+    public class UserDto
     {
         public Guid Id { get; set; }
         public string Username { get; set; } = null!;

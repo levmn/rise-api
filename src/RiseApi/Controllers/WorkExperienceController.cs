@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RiseApi.Data;
@@ -8,6 +9,7 @@ namespace RiseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WorkExperienceController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -20,8 +22,9 @@ namespace RiseApi.Controllers
         [HttpPost]
         public async Task<ActionResult> Create(WorkExperienceCreateDto dto)
         {
-            if (!await _context.Resumes.AnyAsync(r => r.Id == dto.ResumeId))
-                return BadRequest("Resume não existe.");
+            var resume = await _context.Resumes.FindAsync(dto.ResumeId);
+            if (resume == null)
+                return NotFound("Currículo não encontrado.");
 
             var work = new WorkExperience
             {
@@ -35,7 +38,36 @@ namespace RiseApi.Controllers
             _context.WorkExperiences.Add(work);
             await _context.SaveChangesAsync();
 
-            return Ok(work);
+            return CreatedAtAction(nameof(Create), new { id = work.Id }, new
+            {
+                data = new WorkExperienceDto
+                {
+                    Id = work.Id,
+                    Company = work.Company,
+                    Title = work.Title,
+                    StartDate = work.StartDate,
+                    EndDate = work.EndDate,
+                    ResumeId = work.ResumeId
+                },
+                links = new
+                {
+                    resume = Url.Action("GetById", "Resume", new { id = dto.ResumeId }),
+                    delete = Url.Action(nameof(Delete), new { id = work.Id })
+                }
+            });
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var work = await _context.WorkExperiences.FindAsync(id);
+            if (work == null) return NotFound();
+
+            _context.WorkExperiences.Remove(work);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }

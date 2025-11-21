@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RiseApi.Data;
@@ -8,6 +9,7 @@ namespace RiseApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ResumeController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -18,10 +20,20 @@ namespace RiseApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ResumeResponseDto>>> GetAll()
+        public async Task<ActionResult> GetAll(int page = 1, int pageSize = 10)
         {
-            var resumes = await _context.Resumes
-                .Select(r => new ResumeResponseDto
+            if (page < 1 || pageSize < 1)
+                return BadRequest("page e pageSize devem ser maiores que 0.");
+
+            var query = _context.Resumes.AsQueryable();
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            var resumes = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new ResumeDto
                 {
                     Id = r.Id,
                     Goal = r.Goal,
@@ -29,14 +41,33 @@ namespace RiseApi.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(resumes);
+            var links = new
+            {
+                self = Url.Action(nameof(GetAll), new { page, pageSize }),
+                next = page < totalPages ? Url.Action(nameof(GetAll), new { page = page + 1, pageSize }) : null,
+                prev = page > 1 ? Url.Action(nameof(GetAll), new { page = page - 1, pageSize }) : null
+            };
+
+            return Ok(new
+            {
+                page,
+                pageSize,
+                totalItems,
+                totalPages,
+                data = resumes,
+                links
+            });
         }
+
 
         [HttpPost]
         public async Task<ActionResult> Create(ResumeCreateDto dto)
         {
-            if (!await _context.Users.AnyAsync(u => u.Id == dto.UserId))
-                return BadRequest("Usuário não existe.");
+            var exists = await _context.Users
+                .CountAsync(u => u.Id == dto.UserId);
+
+            if (exists == 0)
+                return BadRequest("Usuário não encontrado.");
 
             var resume = new Resume
             {

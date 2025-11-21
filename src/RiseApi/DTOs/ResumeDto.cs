@@ -6,7 +6,7 @@ namespace RiseApi.DTOs
         public Guid UserId { get; set; }
     }
 
-    public class ResumeResponseDto
+    public class ResumeDto
     {
         public Guid Id { get; set; }
         public string Goal { get; set; } = "";
