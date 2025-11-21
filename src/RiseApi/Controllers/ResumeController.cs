@@ -24,14 +24,14 @@ namespace RiseApi.Controllers
         public async Task<ActionResult> GetAll(int page = 1, int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
-                return BadRequest("page e pageSize devem ser maiores que 0.");
+                return BadRequest(new { message = "page e pageSize devem ser maiores que 0." });
 
-            var query = _context.Resumes.AsQueryable();
+            var query = _context.Resumes.AsNoTracking();
 
             var totalItems = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-            var resumes = await query
+            var items = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(r => new ResumeDto
@@ -42,6 +42,24 @@ namespace RiseApi.Controllers
                 })
                 .ToListAsync();
 
+            var itemLinks = items.Select(r => new
+            {
+                data = r,
+                links = new
+                {
+                    self = Url.Action(nameof(Update), new { id = r.Id }),
+                    delete = Url.Action(nameof(Delete), new { id = r.Id })
+                }
+            });
+
+            var meta = new
+            {
+                page,
+                pageSize,
+                totalItems,
+                totalPages
+            };
+
             var links = new
             {
                 self = Url.Action(nameof(GetAll), new { page, pageSize }),
@@ -49,15 +67,7 @@ namespace RiseApi.Controllers
                 prev = page > 1 ? Url.Action(nameof(GetAll), new { page = page - 1, pageSize }) : null
             };
 
-            return Ok(new
-            {
-                page,
-                pageSize,
-                totalItems,
-                totalPages,
-                data = resumes,
-                links
-            });
+            return Ok(new { meta, data = itemLinks, links });
         }
 
 
@@ -81,5 +91,47 @@ namespace RiseApi.Controllers
 
             return CreatedAtAction(nameof(GetAll), resume);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, ResumeUpdateDto dto)
+        {
+            var resume = await _context.Resumes.FindAsync(id);
+
+            if (resume == null)
+                return NotFound(new { message = "Currículo não encontrado." });
+
+            resume.Goal = dto.Goal;
+            _context.Resumes.Update(resume);
+            await _context.SaveChangesAsync();
+
+            var response = new ResumeDto
+            {
+                Id = resume.Id,
+                Goal = resume.Goal,
+                UserId = resume.UserId
+            };
+
+            var links = new
+            {
+                self = Url.Action(nameof(Update), new { id = resume.Id }),
+                get = Url.Action(nameof(GetAll), new { page = 1, pageSize = 10 }),
+                delete = Url.Action(nameof(Delete), new { id = resume.Id })
+            };
+
+            return Ok(new { data = response, links });
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var resume = await _context.Resumes.FindAsync(id);
+            if (resume == null)
+                return NotFound(new { message = "Currículo não encontrado." });
+
+            _context.Resumes.Remove(resume);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
     }
 }

@@ -58,6 +58,42 @@ namespace RiseApi.Controllers
             });
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, WorkExperienceUpdateDto dto)
+        {
+            var work = await _context.WorkExperiences.FindAsync(id);
+            if (work == null)
+                return NotFound(new { message = "Experiência profissional não encontrada." });
+
+            work.Company = dto.Company;
+            work.Title = dto.Title;
+            work.StartDate = dto.StartDate;
+            work.EndDate = dto.EndDate;
+
+            _context.WorkExperiences.Update(work);
+            await _context.SaveChangesAsync();
+
+            var responseDto = new WorkExperienceDto
+            {
+                Id = work.Id,
+                Company = work.Company,
+                Title = work.Title,
+                StartDate = work.StartDate,
+                EndDate = work.EndDate,
+                ResumeId = work.ResumeId
+            };
+
+            var links = new
+            {
+                self = Url.Action(nameof(Update), new { id = work.Id }),
+                resume = Url.Action("GetById", "Resume", new { id = work.ResumeId }),
+                delete = Url.Action(nameof(Delete), new { id = work.Id })
+            };
+
+            return Ok(new { data = responseDto, links });
+        }
+
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

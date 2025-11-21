@@ -6,6 +6,12 @@ namespace RiseApi.DTOs
         public Guid UserId { get; set; }
     }
 
+    public class ResumeUpdateDto
+    {
+        public string Goal { get; set; } = "";
+        public Guid UserId { get; set; }
+    }
+
     public class ResumeDto
     {
         public Guid Id { get; set; }

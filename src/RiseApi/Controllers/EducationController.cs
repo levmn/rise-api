@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RiseApi.Data;
 using RiseApi.DTOs;
 using RiseApi.Models;
@@ -57,6 +56,42 @@ namespace RiseApi.Controllers
                 }
             });
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, EducationUpdateDto dto)
+        {
+            var education = await _context.Education.FindAsync(id);
+            if (education == null)
+                return NotFound(new { message = "Formação não encontrada." });
+
+            education.School = dto.School;
+            education.Degree = dto.Degree;
+            education.StartDate = dto.StartDate;
+            education.EndDate = dto.EndDate;
+
+            _context.Education.Update(education);
+            await _context.SaveChangesAsync();
+
+            var responseDto = new EducationDto
+            {
+                Id = education.Id,
+                School = education.School,
+                Degree = education.Degree,
+                StartDate = education.StartDate,
+                EndDate = education.EndDate,
+                ResumeId = education.ResumeId
+            };
+
+            var links = new
+            {
+                self = Url.Action(nameof(Update), new { id = education.Id }),
+                resume = Url.Action("GetById", "Resume", new { id = education.ResumeId }),
+                delete = Url.Action(nameof(Delete), new { id = education.Id })
+            };
+
+            return Ok(new { data = responseDto, links });
+        }
+
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
