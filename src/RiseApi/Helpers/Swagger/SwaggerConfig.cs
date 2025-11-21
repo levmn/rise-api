@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -7,20 +8,26 @@ namespace RiseApi.Helpers.Swagger
     {
         public static void AddSwaggerDocumentation(this IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Rise API",
-                    Version = "v1",
-                    Description = "API para gerenciamento de usuários e planos de desenvolvimento de carreira."
-                });
+                using var serviceProvider = services.BuildServiceProvider();
+                var provider = serviceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
 
-                c.ExampleFilters();
-
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                foreach (var description in provider.ApiVersionDescriptions)
                 {
-                    Description = "Insira o token: Bearer {TOKEN}",
+                    options.SwaggerDoc(description.GroupName, new OpenApiInfo
+                    {
+                        Title = "Rise API",
+                        Version = description.ApiVersion.ToString(),
+                        Description = "API para gerenciamento de usuários e planos de desenvolvimento de carreira."
+                    });
+                }
+
+                options.ExampleFilters();
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "Insira o token no formato: Bearer {TOKEN}",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
@@ -28,7 +35,7 @@ namespace RiseApi.Helpers.Swagger
                     BearerFormat = "JWT"
                 });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
