@@ -36,8 +36,11 @@ var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 var baseConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 var connectionString = $"User Id={dbUser};Password={dbPassword};{baseConnection}";
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseOracle(connectionString));
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseOracle(connectionString));
+}
 
 var key = builder.Configuration["Jwt:Key"] ?? throw new Exception("JWT Key missing.");
 var issuer = builder.Configuration["Jwt:Issuer"];
@@ -91,3 +94,5 @@ app.UseSwaggerUI(options =>
 });
 
 app.Run();
+
+public partial class Program { }
