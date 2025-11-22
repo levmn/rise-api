@@ -1,13 +1,16 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RiseApi.Data;
 using RiseApi.Helpers.Swagger;
 using RiseApi.Services;
+using System.Text;
 using DotNetEnv;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using HealthChecks.UI.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +66,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 
+var healthChecksBuilder = builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy());
+
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    healthChecksBuilder.AddDbContextCheck<AppDbContext>();
+}
+
 builder.Configuration.AddJsonFile(
     "appsettings.Development.json",
     optional: true,
@@ -91,6 +102,11 @@ app.UseSwaggerUI(options =>
             description.GroupName.ToUpperInvariant()
         );
     }
+});
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
 app.Run();
