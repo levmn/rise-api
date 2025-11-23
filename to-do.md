@@ -1,10 +1,14 @@
 - to-do:
-
     - [x] controllers
     - [x] autenticacao JWT
-    - [] versionar API
-    - [] implementar paginacao
-    - [] implementar hateoas
-    - [] implementar health check
+    - [x] versionar API
+    - [x] implementar paginacao
+    - [x] implementar hateoas
+    - [x] testes unitarios/integracao [user e auth, faltam os outros]
+    - [x] implementar health check
     - [] implementar logging e tracing
-    - [] testes unitarios
+    - [x] atualizar o README.md [falta atualizar com tracing implementado]
+
+- improvement:
+    - [] mostrar 'education' e 'work experience' na resposta de GET 'resume'
+    - [] atualizar 'resume' sempre que um novo 'education' ou 'work experience' eh adicionado
