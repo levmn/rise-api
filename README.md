@@ -51,6 +51,98 @@
     http://localhost:5000/swagger
     ```
 
+## 🗃️ Entity Framework Core & Migrations
+
+A **RiseApi** utiliza o **Entity Framework Core** como ORM para realizar o mapeamento objeto-relacional e gerenciar o schema do banco Oracle por meio de *migrations*.
+
+### 📦 Estrutura do EF Core
+
+- O contexto principal está localizado em:
+
+  ```
+  src/RiseApi/Data/AppDbContext.cs
+  ```
+
+- As *migrations* geradas são armazenadas em:
+
+  ```
+  src/RiseApi/Migrations
+  ```
+
+### 🔧 Criando uma nova Migration
+
+Antes de gerar migrations, certifique-se de que as variáveis de ambiente do banco estão configuradas e que o `Oracle.EntityFrameworkCore` está instalado.
+
+Para criar uma nova migration:
+
+```bash
+dotnet ef migrations add NomeDaMigration \
+  --project src/RiseApi \
+  --startup-project src/RiseApi \
+  --output-dir Migrations
+```
+
+### ⬆️ Aplicando as Migrations ao Banco de Dados
+
+Para atualizar o schema do banco de dados com as migrations pendentes:
+
+```bash
+dotnet ef database update \
+  --project src/RiseApi \
+  --startup-project src/RiseApi
+```
+
+## 🚦 Versionamento de Rotas (API Versioning)
+
+Utilizamos **versionamento via rotas**, seguindo o padrão REST:
+
+```
+/api/v1/...
+```
+
+Esse padrão permite evoluir a API sem quebrar compatibilidade com clientes antigos.
+
+### 🔧 Configuração
+
+O versionamento está configurado no pipeline da aplicação em:
+
+```
+src/RiseApi/Program.cs
+```
+
+Cada controller define explicitamente a versão:
+
+```csharp
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class UsuarioController : ControllerBase
+{
+}
+```
+
+### ➕ Criando uma nova versão da API
+
+Para adicionar uma nova versão (ex: `v2`):
+
+1. Criar controllers com a nova anotação:
+
+   ```csharp
+   [ApiVersion("2.0")]
+   [Route("api/v{version:apiVersion}/[controller]")]
+   public class UsuarioControllerV2 : ControllerBase { }
+   ```
+
+2. Registrar a versão no `ApiVersioning` dentro do `Program.cs`.
+
+3. Manter todos os endpoints `v1` funcionando até a migração completa dos clientes.
+
+### ✔️ Benefícios
+
+- Permite mudanças sem breaking changes  
+- Oferece múltiplas versões simultaneamente  
+- Facilita o deprecamento controlado de endpoints antigos 
+
 ## 📜 Documentação da API
 
 A API utiliza **Swagger** para documentar seus endpoints.  
@@ -83,4 +175,3 @@ cd tests
 # e rode o comando
 dotnet test
 ```
-  
