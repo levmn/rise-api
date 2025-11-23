@@ -73,14 +73,14 @@ A API expõe um endpoint para monitoramento:
 Esse endpoint pode ser usado para liveness e readiness probes (monitoramento de disponibilidade).
 
 ## ✅ Testes
+**Testes de integração**: usam um servidor web e banco de dados de teste ou in-memory para testar os endpoints HTTP.
 
-- **Testes de integração**: usam um servidor web e banco de dados de teste ou in-memory para testar os endpoints HTTP.
-- Para executar todos os testes:
-  
-    ```bash
-    # navegue até o diretorio de testes
-    cd tests
-    # e rode o comando
-    dotnet test
-    ```
+Para executar todos os testes:
+
+```bash
+# navegue até o diretorio de testes
+cd tests
+# e rode o comando
+dotnet test
+```
   
