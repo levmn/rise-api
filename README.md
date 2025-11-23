@@ -47,7 +47,7 @@
 
 5. Acesse a documentação Swagger:
 
-    ```
+    ```bash
     http://localhost:5000/swagger
     ```
 
@@ -68,22 +68,19 @@ Os modelos de request e response são definidos via DTOs, com exemplos e descri�
 
 A API expõe um endpoint para monitoramento:
 
-    ```
     GET /api/v1/health
-    ```
 
 Esse endpoint pode ser usado para liveness e readiness probes (monitoramento de disponibilidade).
 
 ## ✅ Testes
 
 - **Testes de integração**: usam um servidor web e banco de dados de teste ou in-memory para testar os endpoints HTTP.
-
-Para executar todos os testes:
-    1. N
-
+- Para executar todos os testes:
+  
     ```bash
     # navegue até o diretorio de testes
     cd tests
     # e rode o comando
     dotnet test
     ```
+  
